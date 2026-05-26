@@ -2,6 +2,7 @@
 
 const API_URL = "https://whenisthenextmcufilm.com/api";
 $ch = curl_init(API_URL);
+curl_setopt($ch, CURLOPT_CAINFO, __DIR__ . '/../cacert.pem');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 $result = curl_exec($ch);
 $data = json_decode($result, true);
