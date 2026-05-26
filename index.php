@@ -2,15 +2,23 @@
 
 const API_URL = "https://whenisthenextmcufilm.com/api";
 $ch = curl_init(API_URL);
+
+// Configuración de cURL optimizada para entornos locales y producción (Render)
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-// 📌 Solución para Render: Desactivar la verificación estricta de SSL en el contenedor
+// 📌 1. Desactivar la verificación estricta de SSL en el contenedor Docker
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
+// 📌 2. Simular un navegador real para evitar que la API bloquee la IP del servidor
+curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
+
+// 📌 3. Establecer un tiempo límite de espera de 10 segundos
+curl_setopt($ch, CURLOPT_TIMEOUT, 10);
 
 $result = curl_exec($ch);
 $data = json_decode($result, true);
 
-curl_close($ch); // Buena práctica: Cerrar la conexión cURL
+curl_close($ch); // Cerrar la conexión de forma limpia
 
 ?>
 <!DOCTYPE html>
@@ -32,7 +40,7 @@ curl_close($ch); // Buena práctica: Cerrar la conexión cURL
             min-height: 90vh;
         }
 
-        /* Botón */
+        /* Botón de cambio de tema */
         .theme-switcher {
             position: absolute;
             top: 20px;
@@ -43,7 +51,7 @@ curl_close($ch); // Buena práctica: Cerrar la conexión cURL
         .btn-minimal {
             background: transparent;
             border: none;
-            color: var(--pico-muted-color); /* Usa el color de texto atenuado nativo de Pico */
+            color: var(--pico-muted-color); /* Color de texto atenuado nativo de Pico */
             padding: 8px 12px;
             font-size: 0.85rem;
             cursor: pointer;
@@ -52,7 +60,7 @@ curl_close($ch); // Buena práctica: Cerrar la conexión cURL
             opacity: 0.6;
         }
 
-        /* Al pasar el mouse, recupera un poco de visibilidad*/
+        /* Efecto Hover del botón */
         .btn-minimal:hover {
             background: transparent;
             color: var(--pico-color);
@@ -70,9 +78,9 @@ curl_close($ch); // Buena práctica: Cerrar la conexión cURL
     <main>
         <h1>¿Cuándo se estrena la próxima película de Marvel?</h1>
 
-        <?php if ($data && !isset($data['error'])): ?>
+        <?php if ($data && !isset($data['error']) && isset($data['title'])): ?>
             <section>
-                <img src="<?= $data["poster_url"]; ?>" width="300" alt="Poster de la próxima película de Marvel" style="border-radius: 16px; box-shadow: 0px 10px 35px rgba(0,0,0,0.2);" />
+                <img src="<?= $data["poster_url"]; ?>" width="300" alt="Poster de <?= $data["title"]; ?>" style="border-radius: 16px; box-shadow: 0px 10px 35px rgba(0,0,0,0.2);" />
             </section>
 
             <hgroup>
@@ -88,6 +96,7 @@ curl_close($ch); // Buena práctica: Cerrar la conexión cURL
     </main>
 
     <script>
+        // Lógica del Theme Switcher (Modo Claro / Oscuro)
         const button = document.getElementById('theme-toggle');
         const html = document.documentElement;
 
