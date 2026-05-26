@@ -2,10 +2,15 @@
 
 const API_URL = "https://whenisthenextmcufilm.com/api";
 $ch = curl_init(API_URL);
-curl_setopt($ch, CURLOPT_CAINFO, __DIR__ . '/../cacert.pem');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+// 📌 Solución para Render: Desactivar la verificación estricta de SSL en el contenedor
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
 $result = curl_exec($ch);
 $data = json_decode($result, true);
+
+curl_close($ch); // Buena práctica: Cerrar la conexión cURL
 
 ?>
 <!DOCTYPE html>
@@ -63,16 +68,23 @@ $data = json_decode($result, true);
     </div>
 
     <main>
-        <h1>¿Cúando se estrena la próxima película de Marvel?</h1>
-        <section>
-            <img src="<?= $data["poster_url"]; ?>" width="300" alt="Poster de la próxima película de Marvel" style="border-radius: 16px; box-shadow: 0px 10px 35px rgba(0,0,0,0.2);" />
-        </section>
+        <h1>¿Cuándo se estrena la próxima película de Marvel?</h1>
 
-        <hgroup>
-            <h3><?= $data["title"]; ?> se estrena en <?= $data["days_until"]; ?> día(s)</h3>
-            <p>Fecha de estreno: <?= $data["release_date"]; ?></p>
-            <p><strong>La siguiente producción es:</strong> <?= $data["following_production"]["title"]; ?></p>
-        </hgroup> 
+        <?php if ($data && !isset($data['error'])): ?>
+            <section>
+                <img src="<?= $data["poster_url"]; ?>" width="300" alt="Poster de la próxima película de Marvel" style="border-radius: 16px; box-shadow: 0px 10px 35px rgba(0,0,0,0.2);" />
+            </section>
+
+            <hgroup>
+                <h3><?= $data["title"]; ?> se estrena en <?= $data["days_until"]; ?> día(s)</h3>
+                <p>Fecha de estreno: <?= $data["release_date"]; ?></p>
+                <p><strong>La siguiente producción es:</strong> <?= $data["following_production"]["title"]; ?></p>
+            </hgroup> 
+        <?php else: ?>
+            <section style="padding: 20px; max-width: 500px;">
+                <p>🍿 No pudimos conectar con el universo Marvel en este momento, pero los servidores están trabajando en ello. ¡Inténtalo de nuevo en unos instantes!</p>
+            </section>
+        <?php endif; ?>
     </main>
 
     <script>
